@@ -6,6 +6,7 @@ require_once __DIR__ . '/src/Database.php';
 $pageTitle = 'Students';
 $students = [];
 $databaseUnavailable = false;
+$csrfToken = csrfToken();
 
 try {
     $statement = db()->query(
@@ -54,14 +55,16 @@ require __DIR__ . '/partials/header.php';
                         <th scope="col">Email</th>
                         <th scope="col">Course</th>
                         <th scope="col">Enrolled</th>
-                        <th scope="col"><span class="visually-hidden">Actions</span>Actions</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($students as $student): ?>
                         <tr>
                             <td class="student-name">
+                                <a class="student-detail-link" href="show.php?id=<?= e($student['id']) ?>">
                                 <?= e($student['first_name'] . ' ' . $student['last_name']) ?>
+                                </a>
                             </td>
                             <td><?= e($student['email']) ?></td>
                             <td><?= e($student['course']) ?></td>
@@ -78,8 +81,17 @@ require __DIR__ . '/partials/header.php';
                             </td>
                             <td>
                                 <div class="actions">
+                                    <a class="action-link" href="show.php?id=<?= e($student['id']) ?>">View</a>
                                     <a class="action-link" href="edit.php?id=<?= e($student['id']) ?>">Edit</a>
-                                    <a class="action-link danger" href="delete.php?id=<?= e($student['id']) ?>">Delete</a>
+                                    <form class="delete-form" method="post" action="delete.php"
+                                        onsubmit="return confirm(<?= e(json_encode(
+                                            'Delete ' . $student['first_name'] . ' ' . $student['last_name'] . '?',
+                                            JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP
+                                        )) ?>)">
+                                        <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+                                        <input type="hidden" name="id" value="<?= e($student['id']) ?>">
+                                        <button class="action-link danger" type="submit">Delete</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
